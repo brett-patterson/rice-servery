@@ -1,0 +1,11 @@
+[package]
+name = "servery_monitor"
+version = "0.1.0"
+authors = ["Brett Patterson <brett.patterson@rice.edu>"]
+
+[dependencies]
+serde = "0.9.8"
+serde_json = "0.9.8"
+serde_derive = "0.9.8"
+hyper = "0.10.4"
+html5ever = "0.13.0"
