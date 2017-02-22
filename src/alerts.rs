@@ -8,7 +8,7 @@ use super::config::{Config, Rule, Alert};
 
 pub fn alert(item: &str, servery: &str, rule: &Rule, config: &Config) {
     let alert_text = format!("Found {} at {}", item, servery);
-    
+
     if let Some(ref alert) = rule.alert {
         match alert {
             &Alert::Email(ref address) => {
@@ -19,13 +19,14 @@ pub fn alert(item: &str, servery: &str, rule: &Rule, config: &Config) {
                         .subject(&alert_text)
                         .build()
                         .unwrap();
-                    
+
                     let result = SmtpTransportBuilder::new((outgoing.host.as_str(), outgoing.port))
                         .map(|m| {
                             m.credentials(&outgoing.username, &outgoing.password)
-                            .build()
-                        }).and_then(|mut mailer| mailer.send(email));
-                    
+                                .build()
+                        })
+                        .and_then(|mut mailer| mailer.send(email));
+
                     if let Err(e) = result {
                         writeln!(stderr(), "Email alert failed to send: {}", e).unwrap();
                     }
@@ -33,6 +34,6 @@ pub fn alert(item: &str, servery: &str, rule: &Rule, config: &Config) {
             }
         }
     }
-    
+
     println!("{}", alert_text);
 }
