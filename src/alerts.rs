@@ -32,7 +32,7 @@ pub fn alert(item: &str, servery: &str, rule: &Rule, config: &Config) {
                 }
             }
         }
-    } else {
-        println!("{}", alert_text);
     }
+    
+    println!("{}", alert_text);
 }
