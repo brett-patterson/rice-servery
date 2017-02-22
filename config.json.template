@@ -1,0 +1,15 @@
+{
+    "rules": [{
+        "keyword": "salmon",
+        "alert": {
+            "Email": "foo@bar.com"
+        }
+    }],
+    "outgoing_email": {
+        "from": ["servery@monitor.com", "Servery Monitor"],
+        "username": "foo",
+        "password": "bar",
+        "host": "email.provider.com",
+        "port": 587
+    }
+}

@@ -3,7 +3,9 @@ extern crate serde_derive;
 extern crate serde_json;
 extern crate hyper;
 extern crate html5ever;
+extern crate lettre;
 
+mod alerts;
 mod config;
 mod parser;
 mod util;

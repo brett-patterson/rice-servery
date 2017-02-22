@@ -4,6 +4,7 @@ use html5ever::parse_document;
 use html5ever::rcdom::{RcDom, Handle, Text, Element, Normal};
 use html5ever::tendril::TendrilSink;
 
+use super::alerts::alert;
 use super::config::Config;
 use super::util::map_attrs;
 
@@ -41,11 +42,7 @@ impl Parser {
         match node.node {
             Text(ref text) => {
                 if self.in_menu_item {
-                    if self.is_match(text, config) {
-                        let servery = self.servery_title.clone().unwrap_or("Unknown".to_string());
-                        println!("Found {} at {}", text, servery);
-                    }
-
+                    self.check_match(text, config);
                     self.in_menu_item = false;
                 }
             }
@@ -74,11 +71,12 @@ impl Parser {
         }
     }
 
-    fn is_match(&self, item: &str, config: &Config) -> bool {
+    fn check_match(&self, item: &str, config: &Config) -> bool {
         let lower = &item.to_lowercase();
         for rule in config.rules.iter() {
             if lower.contains(&rule.keyword.to_lowercase()) {
-                return true;
+                let servery = self.servery_title.clone().unwrap_or("Unknown".to_string());
+                alert(item, &servery, &rule, &config);
             }
         }
 
