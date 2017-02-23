@@ -7,14 +7,14 @@ pub struct Config {
 
 /// A rule that describes what menu items to match, who to alert when found,
 /// and how to alert them.
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, PartialEq, Eq, Hash, Debug)]
 pub struct Rule {
     pub keyword: String,
     pub alert: Option<Alert>,
 }
 
 /// The type of alert to send to a user.
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, PartialEq, Eq, Hash, Debug)]
 pub enum Alert {
     Email(String),
 }

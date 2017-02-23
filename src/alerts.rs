@@ -8,9 +8,7 @@ use super::config::{Config, Rule, Alert};
 
 /// Process a matched item and send alerts based on the matched rule's alert
 /// configuration.
-pub fn alert(item: &str, servery: &str, meal: &str, rule: &Rule, config: &Config) {
-    let alert_text = format!("Found {} at {} for {}", item, servery, meal);
-
+pub fn alert(title: &str, body: &str, rule: &Rule, config: &Config) {
     if let Some(ref alert) = rule.alert {
         match alert {
             &Alert::Email(ref address) => {
@@ -18,7 +16,8 @@ pub fn alert(item: &str, servery: &str, meal: &str, rule: &Rule, config: &Config
                     let email = EmailBuilder::new()
                         .to(address.as_str())
                         .from((outgoing.from.0.as_str(), outgoing.from.1.as_str()))
-                        .subject(&alert_text)
+                        .subject(title)
+                        .body(body)
                         .build()
                         .unwrap();
 
@@ -37,5 +36,5 @@ pub fn alert(item: &str, servery: &str, meal: &str, rule: &Rule, config: &Config
         }
     }
 
-    println!("{}", alert_text);
+    println!("{}:\n{}", title, body);
 }

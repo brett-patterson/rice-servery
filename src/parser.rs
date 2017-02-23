@@ -1,4 +1,5 @@
 use std::io::{Write, stderr};
+use std::collections::HashMap;
 
 use hyper::client::Response;
 use html5ever::parse_document;
@@ -7,20 +8,28 @@ use html5ever::tendril::TendrilSink;
 use regex::Regex;
 
 use super::alerts::alert;
-use super::config::Config;
+use super::config::{Config, Rule};
 use super::util::map_attrs;
 
-const MEAL_PATTERN : &'static str = "^Your (\\w+), Today:$";
+const MEAL_PATTERN: &'static str = "^Your (\\w+), Today:$";
+
+/// A match found by the parser.
+#[derive(Debug)]
+struct Match {
+    item: String,
+    servery: String,
+}
 
 /// The parser used to parse the HTML response of the servery menus.
-pub struct Parser {
+pub struct Parser<'a> {
     response: Response,
     meal: Option<String>,
     servery_title: Option<String>,
     in_menu_item: bool,
+    matches: HashMap<&'a Rule, Vec<Match>>,
 }
 
-impl Parser {
+impl<'a> Parser<'a> {
     /// Construct a new Parser from an HTTP response.
     pub fn new(res: Response) -> Self {
         Parser {
@@ -28,17 +37,31 @@ impl Parser {
             meal: None,
             servery_title: None,
             in_menu_item: false,
+            matches: HashMap::new(),
         }
     }
 
-    /// Parse the response with a given configuration.
-    pub fn parse(&mut self, config: &Config) {
+    /// Parse the response with a given configuration and send alerts as found.
+    pub fn parse(&mut self, config: &'a Config) {
         let parsed = parse_document(RcDom::default(), Default::default())
             .from_utf8()
             .read_from(&mut self.response);
 
         match parsed {
-            Ok(dom) => self.walk(dom.document, config),
+            Ok(dom) => {
+                self.walk(dom.document, config);
+
+                for (rule, matches) in &self.matches {
+                    let meal = self.meal.clone().unwrap_or("Unknown".to_string());
+                    let title = format!("Found {} for {}", rule.keyword, meal);
+                    let body = matches.iter()
+                        .map(|m| format!("{} at {}", m.item, m.servery))
+                        .fold("".to_string(),
+                              |acc, m| if acc.len() == 0 { m } else { acc + "\n" + &m });
+
+                    alert(&title, &body, rule, config);
+                }
+            }
             Err(e) => {
                 writeln!(stderr(), "Error parsing menu: {}", e).unwrap();
                 return;
@@ -47,7 +70,7 @@ impl Parser {
     }
 
     /// The recursive function used to visit each node in the parsed DOM.
-    fn walk(&mut self, handle: Handle, config: &Config) {
+    fn walk(&mut self, handle: Handle, config: &'a Config) {
         let node = handle.borrow();
         match node.node {
             Text(ref text) => {
@@ -86,15 +109,23 @@ impl Parser {
         }
     }
 
-    /// Check if a menu item matches a rule, and if so send the appropriate
-    /// alert.
-    fn check_match(&self, item: &str, config: &Config) -> bool {
+    /// Check if a menu item matches a rule, and if so add it to the set
+    /// of matches.
+    fn check_match(&mut self, item: &str, config: &'a Config) -> bool {
         let lower = &item.to_lowercase();
         for rule in config.rules.iter() {
             if lower.contains(&rule.keyword.to_lowercase()) {
                 let servery = self.servery_title.clone().unwrap_or("Unknown".to_string());
-                let meal = self.meal.clone().unwrap_or("Unknown".to_string());
-                alert(item, &servery, &meal, &rule, &config);
+                if !self.matches.contains_key(&rule) {
+                    self.matches.insert(&rule, Vec::new());
+                }
+
+                self.matches.get_mut(&rule).map(|v| {
+                    v.push(Match {
+                        item: item.to_string(),
+                        servery: servery,
+                    })
+                });
             }
         }
 
