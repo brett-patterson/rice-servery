@@ -12,6 +12,7 @@ use super::util::map_attrs;
 
 const MEAL_PATTERN : &'static str = "^Your (\\w+), Today:$";
 
+/// The parser used to parse the HTML response of the servery menus.
 pub struct Parser {
     response: Response,
     meal: Option<String>,
@@ -20,6 +21,7 @@ pub struct Parser {
 }
 
 impl Parser {
+    /// Construct a new Parser from an HTTP response.
     pub fn new(res: Response) -> Self {
         Parser {
             response: res,
@@ -29,6 +31,7 @@ impl Parser {
         }
     }
 
+    /// Parse the response with a given configuration.
     pub fn parse(&mut self, config: &Config) {
         let parsed = parse_document(RcDom::default(), Default::default())
             .from_utf8()
@@ -43,6 +46,7 @@ impl Parser {
         };
     }
 
+    /// The recursive function used to visit each node in the parsed DOM.
     fn walk(&mut self, handle: Handle, config: &Config) {
         let node = handle.borrow();
         match node.node {
@@ -82,6 +86,8 @@ impl Parser {
         }
     }
 
+    /// Check if a menu item matches a rule, and if so send the appropriate
+    /// alert.
     fn check_match(&self, item: &str, config: &Config) -> bool {
         let lower = &item.to_lowercase();
         for rule in config.rules.iter() {

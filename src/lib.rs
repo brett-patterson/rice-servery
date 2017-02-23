@@ -21,12 +21,15 @@ use parser::Parser;
 
 const MENU_URL: &'static str = "http://dining.rice.edu/";
 
+/// The main entry point to the library. Used to process a configuration file
+/// and parse the servery menus.
 pub struct ServeryMonitor {
     config: Config,
     client: Client,
 }
 
 impl ServeryMonitor {
+    /// Construct a ServeryMonitor from a JSON configuration file.
     pub fn from_file(path: &Path) -> Self {
         let file = match File::open(path) {
             Ok(file) => file,
@@ -44,6 +47,8 @@ impl ServeryMonitor {
         }
     }
 
+    /// Fetch the servery data, parse it, and run it through each of the rules
+    /// given by the configuration.
     pub fn process(&mut self) {
         match self.fetch_menu() {
             Ok(res) => {
@@ -56,6 +61,7 @@ impl ServeryMonitor {
         }
     }
 
+    /// Fetch the servery menus from the Rice Dining website.
     fn fetch_menu(&self) -> Result<Response, String> {
         let res = match self.client.get(MENU_URL).send() {
             Ok(r) => r,

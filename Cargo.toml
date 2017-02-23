@@ -3,6 +3,10 @@ name = "servery_monitor"
 version = "0.1.0"
 authors = ["Brett Patterson <brett.patterson@rice.edu>"]
 
+[[bin]]
+doc = false
+name = "servery_monitor"
+
 [dependencies]
 serde = "0.9.8"
 serde_json = "0.9.8"
