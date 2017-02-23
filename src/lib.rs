@@ -4,6 +4,7 @@ extern crate serde_json;
 extern crate hyper;
 extern crate html5ever;
 extern crate lettre;
+extern crate regex;
 
 mod alerts;
 mod config;

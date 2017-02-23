@@ -6,8 +6,8 @@ use lettre::transport::smtp::SmtpTransportBuilder;
 
 use super::config::{Config, Rule, Alert};
 
-pub fn alert(item: &str, servery: &str, rule: &Rule, config: &Config) {
-    let alert_text = format!("Found {} at {}", item, servery);
+pub fn alert(item: &str, servery: &str, meal: &str, rule: &Rule, config: &Config) {
+    let alert_text = format!("Found {} at {} for {}", item, servery, meal);
 
     if let Some(ref alert) = rule.alert {
         match alert {

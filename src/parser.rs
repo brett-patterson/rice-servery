@@ -1,15 +1,20 @@
 use std::io::{Write, stderr};
+
 use hyper::client::Response;
 use html5ever::parse_document;
 use html5ever::rcdom::{RcDom, Handle, Text, Element, Normal};
 use html5ever::tendril::TendrilSink;
+use regex::Regex;
 
 use super::alerts::alert;
 use super::config::Config;
 use super::util::map_attrs;
 
+const MEAL_PATTERN : &'static str = "^Your (\\w+), Today:$";
+
 pub struct Parser {
     response: Response,
+    meal: Option<String>,
     servery_title: Option<String>,
     in_menu_item: bool,
 }
@@ -18,6 +23,7 @@ impl Parser {
     pub fn new(res: Response) -> Self {
         Parser {
             response: res,
+            meal: None,
             servery_title: None,
             in_menu_item: false,
         }
@@ -41,6 +47,11 @@ impl Parser {
         let node = handle.borrow();
         match node.node {
             Text(ref text) => {
+                let meal_regex = Regex::new(MEAL_PATTERN).unwrap();
+                if let Some(caps) = meal_regex.captures(text) {
+                    self.meal = caps.get(1).map(|c| c.as_str().to_string());
+                }
+
                 if self.in_menu_item {
                     self.check_match(text, config);
                     self.in_menu_item = false;
@@ -76,7 +87,8 @@ impl Parser {
         for rule in config.rules.iter() {
             if lower.contains(&rule.keyword.to_lowercase()) {
                 let servery = self.servery_title.clone().unwrap_or("Unknown".to_string());
-                alert(item, &servery, &rule, &config);
+                let meal = self.meal.clone().unwrap_or("Unknown".to_string());
+                alert(item, &servery, &meal, &rule, &config);
             }
         }
 
