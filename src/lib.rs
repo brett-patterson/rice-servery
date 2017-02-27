@@ -6,76 +6,8 @@ extern crate html5ever;
 extern crate lettre;
 extern crate regex;
 
-mod alerts;
-mod config;
-mod parser;
+mod menu;
+mod monitor;
 mod util;
 
-use std::path::Path;
-use std::fs::File;
-use std::io::{Write, stderr};
-use hyper::client::{Client, Response};
-
-use config::Config;
-use parser::Parser;
-
-const MENU_URL: &'static str = "http://dining.rice.edu/";
-
-/// The main entry point to the library. Used to process a configuration file
-/// and parse the servery menus.
-pub struct ServeryMonitor {
-    config: Config,
-    client: Client,
-}
-
-impl ServeryMonitor {
-    /// Construct a ServeryMonitor from a JSON configuration file.
-    pub fn from_file(path: &Path) -> Self {
-        let file = match File::open(path) {
-            Ok(file) => file,
-            Err(e) => panic!("Error reading {}: {}", path.display(), e),
-        };
-
-        let config: Config = match serde_json::from_reader(&file) {
-            Ok(cfg) => cfg,
-            Err(e) => panic!("Error parsing {}: {}", path.display(), e),
-        };
-
-        ServeryMonitor {
-            config: config,
-            client: Client::new(),
-        }
-    }
-
-    /// Fetch the servery data, parse it, and run it through each of the rules
-    /// given by the configuration.
-    pub fn process(&mut self) {
-        match self.fetch_menu() {
-            Ok(res) => {
-                let mut parser = Parser::new(res);
-                parser.parse(&self.config);
-            }
-            Err(e) => {
-                writeln!(stderr(), "{}", e).unwrap();
-            }
-        }
-    }
-
-    /// Fetch the servery menus from the Rice Dining website.
-    fn fetch_menu(&self) -> Result<Response, String> {
-        let res = match self.client.get(MENU_URL).send() {
-            Ok(r) => r,
-            Err(e) => {
-                return Err(format!("Could not fetch menu at {}: {}", MENU_URL, e));
-            }
-        };
-
-        if res.status != hyper::Ok {
-            Err(format!("Unable to fetch menu at {}. Status: {}",
-                        MENU_URL,
-                        res.status))
-        } else {
-            Ok(res)
-        }
-    }
-}
+pub use monitor::Monitor;

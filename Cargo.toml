@@ -1,11 +1,11 @@
 [package]
-name = "servery_monitor"
+name = "rice_servery"
 version = "0.1.0"
 authors = ["Brett Patterson <brett.patterson@rice.edu>"]
 
 [[bin]]
 doc = false
-name = "servery_monitor"
+name = "rice_servery"
 
 [dependencies]
 serde = "0.9.8"

@@ -1,10 +1,10 @@
-extern crate servery_monitor;
+extern crate rice_servery;
 
 use std::path::Path;
-use servery_monitor::ServeryMonitor;
+use rice_servery::Monitor;
 
 fn main() {
     let path = Path::new("config.json");
-    let mut monitor = ServeryMonitor::from_file(&path);
+    let mut monitor = Monitor::from_file(&path);
     monitor.process();
 }
