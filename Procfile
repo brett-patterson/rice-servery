@@ -1,0 +1,1 @@
+web: ./target/release/rice_servery server
