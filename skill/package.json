@@ -1,0 +1,10 @@
+{
+  "name": "skill-rice-servery",
+  "version": "1.0.0",
+  "description": "Rice servery skill",
+  "main": "index.js",
+  "dependencies": {
+    "alexa-sdk": "^1.0.0",
+    "escape-html": "^1.0.3"
+  }
+}

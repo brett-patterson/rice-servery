@@ -2,3 +2,5 @@ target
 Cargo.lock
 config.json
 .DS_Store
+skill/node_modules
+skill/skill.zip
