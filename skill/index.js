@@ -34,7 +34,7 @@ const handlers = {
                 try {
                     const parsedData = JSON.parse(rawData);
                     const items = parsedData.payload;
-                    const msg = escape(items.join(' '));
+                    const msg = escape(items.join(', '));
                     this.emit(':tell', msg);
                 } catch (e) {
                     throw new Error('Could not parse menu response');
